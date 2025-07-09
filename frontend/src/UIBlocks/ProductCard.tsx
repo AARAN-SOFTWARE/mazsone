@@ -97,7 +97,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ title, api }) => {
     <div className="relative my-5 mx-[5%] max-w-full overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="mt-2 font-bold text-foreground/80 text-[25px]">{title}</h1>
+        <h1 className="mt-2 font-bold text-foreground/80 text-[25px]">
+          {title}
+        </h1>
         <p className="text-update text-lg mt-2 cursor-pointer hover:underline">
           More
         </p>
@@ -122,26 +124,59 @@ const ProductCard: React.FC<ProductCardProps> = ({ title, api }) => {
       )}
 
       {/* Product List */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto scrollbar-hide mt-4"
-      >
+      <div ref={scrollRef} className="overflow-x-auto scrollbar-hide mt-4">
         <div className="flex gap-4 min-w-max py-2">
           {products.map((product) => (
             <div
               key={product.id}
-              className="min-w-[250px] h-max rounded-md p-2 cursor-pointer flex-shrink-0 transition-transform hover:-translate-y-2 duration-300"
+              className="relative group min-w-[250px] h-max rounded-md p-2 cursor-pointer flex-shrink-0 transition-transform hover:-translate-y-2 duration-300 border border-ring/30"
               onClick={() => navigateProductPage(product.id)}
             >
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-[200px] h-[200px] mx-auto object-contain rounded-md"
-              />
+              {/* Discount Label */}
+              <div className="absolute top-2 m-2 left-2 bg-update text-white text-xs px-2 py-1 z-10">
+                -3% OFF
+              </div>
+
+              {/* Hover Icons */}
+              <div className="absolute top-2 right-2 m-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                <ImageButton
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-background text-foreground p-1 rounded-full shadow hover:bg-gray-200"
+                  icon={"cart"}
+                />
+                <ImageButton
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-background text-foreground p-1 rounded-full shadow hover:bg-gray-200"
+                  icon={"like"}
+                />
+                <ImageButton
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-background text-foreground p-1 rounded-full shadow hover:bg-gray-200"
+                  icon={"link"}
+                />
+              </div>
+
+              {/* Product Image */}
+              <div className="relative">
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  className="w-full h-[200px] object-cover rounded-md mx-auto"
+                />
+                <div className="absolute bottom-0  left-2 text-foreground/60 text-lg px-2 py-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  S.345
+                </div>
+                <div className="absolute bottom-0 m-2 right-2 bg-create text-white text-xs px-2 py-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  4 ★
+                </div>
+              </div>
+              {/* Title */}
               <p className="text-center text-sm mt-2 truncate">
                 {product.title}
               </p>
-              <p className="text-center font-bold mt-1 text-base">
+
+              {/* Price */}
+              <p className="text-center font-bold mt-1 text-base text-update">
                 ₹{product.price}
               </p>
             </div>

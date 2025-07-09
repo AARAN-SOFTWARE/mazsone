@@ -4,12 +4,12 @@ import {
   ArrowUpWideNarrow, ArrowDownWideNarrow, EllipsisVertical, Filter,
   PrinterIcon, LucideFileJson2, LucideColumnsSettings,ExpandIcon,
   ChevronRight, ChevronLeft,
-  SortAsc,UserCircle2,LucideShoppingCart,
+  SortAsc,UserCircle2,LucideShoppingCart,Heart
 } from 'lucide-react';
 import { IoIosArrowUp } from "react-icons/io";
 import { IoChevronDown } from "react-icons/io5";
 import React from 'react';
-
+import { FiLink } from "react-icons/fi";
 type ButtonProps = {
   icon: string;
   path?: string;
@@ -43,8 +43,10 @@ const iconMap: Record<string, React.ReactNode> = {
   down: <IoChevronDown  size={18} />,
   fullscreen: <ExpandIcon size={18} />,
    sort: <SortAsc size={18}/>,
-   user: <UserCircle2 size={25}/>,
-   cart: <LucideShoppingCart size={25}/>,
+   user: <UserCircle2 size={18}/>,
+   cart: <LucideShoppingCart size={18}/>,
+   link: <FiLink  size={18}/>,
+   like: <Heart  size={18}/>,
   
 };
 

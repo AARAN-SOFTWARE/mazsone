@@ -1,17 +1,17 @@
 {
   "theme": "light",
   "recordsPerPage": 60,
- 
-  "client": {
+
+  "product": {
     "details": {
-      "title": "Client Details",
+      "title": "Product Details",
       "fields": [
         { "key": "id", "label": "ID", "inTable": true, "isForm": true },
         {
           "key": "name",
           "label": "Product Name",
           "type": "textinput",
-          "api":"",
+          "api": "",
           "inTable": true,
           "isForm": true
         },
@@ -26,14 +26,61 @@
           "key": "images",
           "label": "Image",
           "type": "file",
-          "multiple":true,
+          "multiple": true,
           "inTable": true,
           "isForm": true
         },
-  
+        {
+          "key": "submit",
+          "label": "Submit",
+          "type": "button",
+          "multiple": true,
+          "className": "bg-update text-update-foreground w-full",
+          "inTable": true,
+          "isForm": true
+        },
+        {
+          "key": "cancel",
+          "label": "Cancel",
+          "type": "button",
+          "className": "bg-delete text-delete-foreground w-full",
+          "multiple": true,
+          "inTable": true,
+          "isForm": true
+        },
+
         { "key": "action", "label": "Action", "inTable": true, "isForm": true }
       ]
+    },
+    "specification": {
+      "title": "Product Specifications",
+      "editable": [
+        {
+          "key": "menu_heading",
+          "label": "Submenu Heading",
+          "type": "dropdown",
+          "api": "",
+          "inTable": true,
+          "isForm": true
+        },
+         {
+          "key": "menu_items",
+          "label": "label",
+          "type": "textinput",
+          "api": "",
+          "inTable": true,
+          "isForm": true
+        },
+        {
+          "key": "menu_values",
+          "label": "value",
+          "type": "textinput",
+          "api": "",
+          "inTable": true,
+          "isForm": true
+        }
+      ]
     }
-  }
   
+  }
 }

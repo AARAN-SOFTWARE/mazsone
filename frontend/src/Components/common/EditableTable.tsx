@@ -4,12 +4,14 @@ import MultiCheckbox from "../Input/MultiCheckbox";
 import Switch from "../Input/switch";
 import Checkbox from "../Input/checkbox";
 import { TextArea } from "../SecondaryInput/TextArea";
-import { TextInput } from "../SecondaryInput/TextInput";
 import Dropdown from "../SecondaryInput/Dropdown";
 import PasswordInput from "../SecondaryInput/PasswordInput";
 import AnimateButton from "../Input/animatebutton";
 import ImageButton from "../Button/ImageBtn";
 import DropdownRead from "../SecondaryInput/DropdownRead";
+import FloatingInput from "../Input/FloatingInput";
+import FileUpload from "../Input/FileInput"; // ✅ Ensure this path is correct
+import { TextInput } from "../SecondaryInput/TextInput";
 
 export type FieldType =
   | "textinput"
@@ -17,6 +19,7 @@ export type FieldType =
   | "dropdown"
   | "switch"
   | "checkbox"
+  | "calendar"
   | "multicheckbox"
   | "password"
   | "date"
@@ -25,7 +28,7 @@ export type FieldType =
   | "dropdownreadmultiple"
   | "dropdownmultiple";
 
-type Field = {
+export type Field = {
   className?: string;
   id: string;
   label: string;
@@ -34,7 +37,19 @@ type Field = {
   errMsg?: string;
   placeholder?: string;
   optional?: boolean;
+  readApi?: string;
+  updateApi?: string;
+  apiKey?: string;
+  createKey?: string;
+  multiple?: boolean;
 };
+
+export interface ApiList {
+  create: string;
+  read: string;
+  update: string;
+  delete: string;
+}
 
 interface EditableTableProps {
   fields: Field[];
@@ -71,10 +86,7 @@ function EditableTable({
   };
 
   const isValidValue = (field: Field, value: any): boolean => {
-    if (
-      !field.optional &&
-      (value === "" || value === null || value === undefined)
-    ) {
+    if (!field.optional && (value === "" || value === null || value === undefined)) {
       alert(`Field "${field.label}" cannot be empty`);
       return false;
     }
@@ -90,17 +102,13 @@ function EditableTable({
       return false;
     }
 
-    // For read-only dropdowns, check if value exists in options
     if (
-      (field.type === "dropdownread" ||
-        field.type === "dropdownreadmultiple") &&
+      (field.type === "dropdownread" || field.type === "dropdownreadmultiple") &&
       field.options &&
       value
     ) {
       if (field.type === "dropdownreadmultiple") {
-        const invalid = (value as string[]).some(
-          (v) => !field.options?.includes(v)
-        );
+        const invalid = (value as string[]).some((v) => !field.options?.includes(v));
         if (invalid) {
           alert(`One or more invalid values in "${field.label}"`);
           return false;
@@ -120,7 +128,6 @@ function EditableTable({
     const currentField = fields[colIndex];
     const currentValue = tableData[rowIndex][currentField.id];
 
-    // Validate before proceeding
     if (!isValidValue(currentField, currentValue)) return;
 
     const nextCol = colIndex + 1;
@@ -138,10 +145,7 @@ function EditableTable({
       setTableData(updated);
       setEditingRow(updated.length - 1);
       onChange?.(updated);
-      setTimeout(
-        () => inputRefs.current[updated.length - 1]?.[0]?.focus?.(),
-        0
-      );
+      setTimeout(() => inputRefs.current[updated.length - 1]?.[0]?.focus?.(), 0);
     }
   };
 
@@ -165,9 +169,7 @@ function EditableTable({
   };
 
   const deleteSelectedRows = () => {
-    const updated = tableData.filter(
-      (_, index) => !selectedRows.includes(index)
-    );
+    const updated = tableData.filter((_, index) => !selectedRows.includes(index));
     setTableData(updated);
     setSelectedRows([]);
     onChange?.(updated);
@@ -188,282 +190,176 @@ function EditableTable({
       disabled: editingRow !== rowIndex,
       onKeyDown: (e: React.KeyboardEvent<HTMLElement>) =>
         handleKeyDown(e, rowIndex, colIndex),
-      className: `w-full ${field.className || ""} ${
-        editingRow !== rowIndex ? "opacity-50" : ""
-      }`,
+      className: `w-full ${field.className || ""} ${editingRow !== rowIndex ? "opacity-50" : ""}`,
     };
 
     switch (field.type) {
       case "textinput":
-        return (
-          <TextInput
-            {...commonProps}
-            id={field.id}
-            err=""
-            label=""
-            placeholder={field.placeholder}
-            type="text"
-            value={value || ""}
-            onChange={(e) => handleChange(rowIndex, field.id, e.target.value)}
-          />
-        );
+        return <TextInput id={""} err={""} {...commonProps} label={field.label} type="text" />;
       case "textarea":
-        return (
-          <TextArea
-            {...commonProps}
-            id={field.id}
-            err=""
-            label=""
-            placeholder={field.placeholder}
-            value={value || ""}
-            onChange={(e) => handleChange(rowIndex, field.id, e.target.value)}
-          />
-        );
+        return <TextArea err={""} {...commonProps} label={field.label} />;
       case "dropdown":
-        return (
-          <Dropdown
-            {...commonProps}
-            id={field.id}
-            err=""
-            placeholder={field.placeholder}
-            items={field.options || []}
-            value={value || ""}
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
-          />
-        );
       case "dropdownmultiple":
         return (
           <Dropdown
-            {...commonProps}
-            id={field.id}
-            err=""
-            placeholder={field.placeholder}
-            items={field.options || []}
-            value={value || []}
-            multiple
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
+          id={""} err={""}
+          // readApi={""}
+          // updateApi={""}
+          {...commonProps}
+          items={field.options || []}
+          multiple={field.type === "dropdownmultiple"}
+          placeholder={field.label}            // apiKey={field.apiKey}
+            // createKey={field.createKey}
           />
         );
       case "dropdownread":
-        return (
-          <DropdownRead
-            {...commonProps}
-            id={field.id}
-            err=""
-            placeholder={field.label}
-            items={field.options || []}
-            value={value || ""}
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
-          />
-        );
       case "dropdownreadmultiple":
         return (
           <DropdownRead
+            id={""} err={""} placeholder={""}
             {...commonProps}
-            id={field.id}
-            err=""
-            placeholder={field.label}
+            label={field.label}
             items={field.options || []}
-            value={value || []}
-            multiple
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
+            multiple={field.type === "dropdownreadmultiple"}            // readApi={field.readApi}
+            // apiKey={field.apiKey}
           />
         );
       case "switch":
         return (
           <Switch
-            {...commonProps}
-            id={field.id}
-            label={field.label}
-            agreed={!!value}
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
-          />
+          id={""} onChange={function (checked: boolean): void {
+            throw new Error("Function not implemented.");
+          } } {...commonProps}
+          agreed={!!value}
+          label={!!value ? "Active" : "Inactive"}          />
         );
       case "checkbox":
-        return (
-          <Checkbox
-            {...commonProps}
-            id={field.id}
-            label={field.label}
-            err=""
-            agreed={!!value}
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
-          />
-        );
+        return <Checkbox id={""} err={""} onChange={function (checked: boolean): void {
+          throw new Error("Function not implemented.");
+        } } {...commonProps} agreed={!!value} label={field.label} />;
       case "multicheckbox":
         return (
           <MultiCheckbox
-            {...commonProps}
-            id={field.id}
-            label={field.label}
-            err=""
-            options={field.options || []}
-            value={value || []}
-            onChange={(val) => handleChange(rowIndex, field.id, val)}
-          />
+          id={""} value={[]} err={""} onChange={function (selectedValues: string[]): void {
+            throw new Error("Function not implemented.");
+          } } {...commonProps}
+          label={field.label}
+          options={field.options || []}          />
         );
       case "password":
-        return (
-          <PasswordInput
-            {...commonProps}
-            id={field.id}
-            label={field.placeholder}
-            value={value || ""}
-            onChange={(e) => handleChange(rowIndex, field.id, e.target.value)}
-          />
-        );
+        return <PasswordInput value={""} onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
+          throw new Error("Function not implemented.");
+        } } {...commonProps} label={field.label} />;
       case "date":
         return (
-          <div className="relative z-50">
-            <DatePicker
-              {...commonProps}
-              id={field.id}
-              label={field.label}
-              formatStr="MMM dd,yyyy"
-              model={
-                value instanceof Date
-                  ? value
-                  : value
-                  ? new Date(value)
-                  : undefined
-              }
-              onChange={(val) => handleChange(rowIndex, field.id, val)}
-            />
-          </div>
-        );
-
-      default:
-        return (
-          <input
+          <DatePicker
             {...commonProps}
-            type="text"
-            placeholder={field.label}
-            value={value || ""}
-            onChange={(e) => handleChange(rowIndex, field.id, e.target.value)}
+            model={value instanceof Date ? value : value ? new Date(value) : undefined}
+            label={field.label}
           />
         );
+      case "file":
+        return (
+          <FileUpload
+            key={field.id}
+            id={field.id}
+            onChange={(file) => handleChange(rowIndex, field.id, file)}
+            multiple={field.multiple}
+          />
+        );
+      default:
+        return null;
     }
   };
 
   return (
     <div className="w-full">
-      {/* This div now only contains the table, and manages its overflow */}
-    <div className="overflow-x-auto">
-  <table className="w-full text-sm border-collapse">
-    <thead>
-      <tr className="bg-gray-100 text-gray-700 text-left rounded-t-md">
-        <th className="px-2 py-2 text-center border border-gray-200">
-          <input
-            type="checkbox"
-            checked={selectedRows.length === tableData.length && tableData.length > 0}
-            onChange={(e) =>
-              setSelectedRows(
-                e.target.checked ? tableData.map((_, i) => i) : []
-              )
-            }
-          />
-        </th>
-        <th className="px-2 py-2 border border-gray-200 text-center w-[50px]">No.</th>
-        {fields.map((field, i) => (
-          <th
-            key={i}
-            className="px-2 py-2 border border-gray-200 whitespace-nowrap text-sm font-medium"
-          >
-            {field.label}
-            {!field.optional && <span className="text-red-500 ml-1">*</span>}
-          </th>
-        ))}
-        <th className="px-2 py-2 text-center border border-gray-200 w-[40px]">
-          <span className="inline-block w-4 h-4">
-            ⚙️
-          </span>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      {tableData.map((row, rowIndex) => (
-        <tr key={rowIndex} className="bg-white border-t border-gray-200 hover:bg-gray-50">
-          <td className="text-center border border-gray-200 px-2 py-1">
-            <input
-              type="checkbox"
-              checked={selectedRows.includes(rowIndex)}
-              onChange={() => toggleRowSelect(rowIndex)}
-            />
-          </td>
-          <td className="text-center border border-gray-200 px-2 py-1 font-mono text-sm text-gray-800">
-            {rowIndex + 1}
-          </td>
-          {fields.map((field, colIndex) => (
-            <td
-              key={field.id}
-              className="border border-gray-200 px-2 py-1 whitespace-nowrap"
-            >
-              {renderFieldInput(field, row[field.id], rowIndex, colIndex)}
-            </td>
-          ))}
-          <td className="text-center border border-gray-200 px-2 py-1">
-            <ImageButton
-              icon="edit"
-              onClick={() => setEditingRow(rowIndex)}
-              className="text-muted-foreground hover:text-foreground"
-            />
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-  <div className="flex flex-col relative gap-6 my-10  text-lg">
-        <AnimateButton
-          mode="create"
-          label="New Row"
-          className="text-sm text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-          onClick={() => {
-            const newRow = Object.fromEntries(
-              fields.map((f) => [f.id, ""])
-            );
-            const updated = [...tableData, newRow];
-            setTableData(updated);
-            setEditingRow(updated.length - 1);
-            onChange?.(updated);
-            setTimeout(() => {
-              const firstInput = inputRefs.current[updated.length - 1]?.[0];
-              if (firstInput) firstInput.focus();
-            }, 0);
-          }}
-        />
-   <div className="flex justify-between">
-    <span className="text-gray-700">Sub Total</span>
-    <span className="font-medium text-gray-900">₹ 10,000.00</span>
-  </div>
-  <div className="flex justify-between">
-    <span className="text-gray-700">Discount</span>
-    <span className="font-medium text-gray-900">₹ 500.00</span>
-  </div>
-  <div className="flex justify-between">
-    <span className="text-gray-700">GST (18%)</span>
-    <span className="font-medium text-gray-900">₹ 1,710.00</span>
-  </div>
-  <hr className="my-2 border-gray-300" />
-  <div className="flex justify-between text-base font-semibold">
-    <span className="text-gray-900">Grand Total</span>
-    <span className="text-green-600">₹ 11,210.00</span>
-  </div>
-  </div>
-</div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-gray-700 text-left rounded-t-md">
+              <th className="px-2 py-2 text-center border border-gray-200">
+                <input
+                  type="checkbox"
+                  checked={selectedRows.length === tableData.length && tableData.length > 0}
+                  onChange={(e) =>
+                    setSelectedRows(
+                      e.target.checked ? tableData.map((_, i) => i) : []
+                    )
+                  }
+                />
+              </th>
+              <th className="px-2 py-2 border border-gray-200 text-center w-[50px]">No.</th>
+              {fields.map((field, i) => (
+                <th key={i} className="px-2 py-2 border border-gray-200 whitespace-nowrap text-sm font-medium">
+                  {field.label}
+                  {!field.optional && <span className="text-red-500 ml-1">*</span>}
+                </th>
+              ))}
+              <th className="px-2 py-2 text-center border border-gray-200 w-[40px]">
+                <span className="inline-block w-4 h-4">⚙️</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, rowIndex) => (
+              <tr key={rowIndex} className="bg-white border-t border-gray-200 hover:bg-gray-50">
+                <td className="text-center border border-gray-200 px-2 py-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.includes(rowIndex)}
+                    onChange={() => toggleRowSelect(rowIndex)}
+                  />
+                </td>
+                <td className="text-center border border-gray-200 px-2 py-1 font-mono text-sm text-gray-800">
+                  {rowIndex + 1}
+                </td>
+                {fields.map((field, colIndex) => (
+                  <td key={field.id} className="border border-gray-200 px-2 py-1 whitespace-nowrap">
+                    {renderFieldInput(field, row[field.id], rowIndex, colIndex)}
+                  </td>
+                ))}
+                <td className="text-center border border-gray-200 px-2 py-1">
+                  <ImageButton
+                    icon="edit"
+                    onClick={() => setEditingRow(rowIndex)}
+                    className="text-muted-foreground hover:text-foreground"
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-
-      {/* These buttons are now outside the scrollable div */}
-     
-
-        {selectedRows.length > 0 && (
+        <div className="flex flex-col gap-6 my-10 text-lg">
           <AnimateButton
-            mode="delete"
-            label="Delete"
-            className="text-sm text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-            onClick={deleteSelectedRows}
+            mode="create"
+            label="New Row"
+            className="text-sm text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+            onClick={() => {
+              const newRow = Object.fromEntries(fields.map((f) => [f.id, ""]));
+              const updated = [...tableData, newRow];
+              setTableData(updated);
+              setEditingRow(updated.length - 1);
+              onChange?.(updated);
+              setTimeout(() => {
+                const firstInput = inputRefs.current[updated.length - 1]?.[0];
+                if (firstInput) firstInput.focus();
+              }, 0);
+            }}
           />
-        )}
+        </div>
       </div>
+
+      {selectedRows.length > 0 && (
+        <AnimateButton
+          mode="delete"
+          label="Delete"
+          className="text-sm text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+          onClick={deleteSelectedRows}
+        />
+      )}
+    </div>
   );
 }
 

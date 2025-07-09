@@ -14,6 +14,7 @@ import FloatingInput from "../Input/FloatingInput";
 import ImageButton from "../Button/ImageBtn";
 import apiClient from "@/pages/app/api/apiClients";
 import { format } from "date-fns";
+import EditableTable from "./EditableTable";
 
 export type Field = {
   className: string;
@@ -66,6 +67,8 @@ type CommonFormProps = {
   initialData?: Record<string, any>;
   onSubmit?: (data: any) => void;
   api: ApiList;
+  editableTable?: boolean;
+  editableFields?: Field[];
 };
 
 function CommonForm({
@@ -78,6 +81,8 @@ function CommonForm({
   initialData = {},
   onSubmit,
   api,
+  editableTable = false,
+  editableFields=[]
 }: CommonFormProps) {
   const [formData, setFormData] = useState(initialData);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -214,15 +219,17 @@ function CommonForm({
       >
         <div className="flex justify-between mx-2">
           <h1 className="text-md py-2 text-foreground/50">{formName} Form</h1>
-          <ImageButton
-            icon="close"
-            className="text-delete w-max"
-            onClick={() => {
-              setFormData({});
-              setFormErrors({});
-              setFormOpen?.(false);
-            }}
-          />
+          {isPopUp && (
+            <ImageButton
+              icon="close"
+              className="text-delete w-max"
+              onClick={() => {
+                setFormData({});
+                setFormErrors({});
+                setFormOpen?.(false);
+              }}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-5 border border-ring/30 p-5 rounded-md">
@@ -347,6 +354,7 @@ function CommonForm({
             </div>
           ))}
 
+          {editableTable && <EditableTable fields={editableFields} />}
           <div className="flex justify-end gap-5 mt-4">
             <Button
               label="Cancel"

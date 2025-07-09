@@ -130,18 +130,20 @@ function ProductPage() {
         </div>
 
         {/* --- Product details section --- */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <h1 className="text-xl text-gray-800">{product.name}</h1>
-          <div>
-            <span>4/5</span> <span>76876 rating</span> &{" "}
+          <div className="text-sm text-foreground/50">
+             <span className="bg-green-600 text-white text-xs w-max px-2 py-1 rounded">
+            4 ★
+          </span> <span>76876 rating</span> &{" "}
             <span>7868 Reviews</span>
           </div>
-          <p>EXTRA SAVE 5000</p>
-          <p className="text-2xl text-green-700 font-bold">
+          <p className="text-2xl font-bold">
             ₹{product.price}{" "}
             <span className="line-through text-sm text-foreground/30">
               675634
             </span>
+            <span className="text-sm ml-2 text-create">6% offer</span>
           </p>
           <p className="text-sm text-gray-500">Extra feee</p>
           <p className="text-gray-700 text-lg font-semibold">Available Offer</p>

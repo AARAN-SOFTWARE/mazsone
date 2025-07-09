@@ -13,17 +13,13 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   ({ id, label, err, className = "", ...props }, ref) => {
     return (
       <div className="w-full items-start flex flex-col gap-1">
-        <Label
-          className={`bg-background ${err ? "text-error" : "text-foreground"}`}
-          htmlFor={id}
-        >
-          {label}
-        </Label>
+       
 
         <div className="relative w-full bg-background text-foreground">
           <input
             ref={ref}
             id={id}
+            placeholder={label}
             className={`w-full bg-dashboard-background p-2 text-foreground rounded-sm peer text-sm placeholder-transparent border-none outline-none ring-0 ${className}`}
             {...props}
           />
