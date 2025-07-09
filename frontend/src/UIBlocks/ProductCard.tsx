@@ -1,0 +1,155 @@
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import apiClient from "@/pages/app/api/apiClients";
+import ImageButton from "@/Components/Button/ImageBtn";
+
+export interface ProductItem {
+  id: number;
+  title: string;
+  image: string;
+  price: number;
+}
+
+interface ProductCardProps {
+  title: string;
+  api: string;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ title, api }) => {
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await apiClient.get(api);
+      const apiData = response.data.data || response.data;
+
+      const formatted = apiData.map((item: any) => {
+        const firstImage = item.images?.[0]?.path;
+        return {
+          id: item.id,
+          title: item.name || item.title,
+          image: firstImage
+            ? firstImage.startsWith("http")
+              ? firstImage
+              : `http://127.0.0.1:8000/${firstImage}`
+            : "/placeholder.png",
+          price: item.price,
+        };
+      });
+
+      setProducts(formatted);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [api]);
+
+  const checkScrollButtons = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const isOverflowing = el.scrollWidth > el.clientWidth;
+    const atStart = el.scrollLeft <= 10;
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+
+    setShowLeft(isOverflowing && !atStart);
+    setShowRight(isOverflowing && !atEnd);
+  };
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    checkScrollButtons(); // check on mount
+
+    el.addEventListener("scroll", checkScrollButtons);
+    window.addEventListener("resize", checkScrollButtons);
+
+    return () => {
+      el.removeEventListener("scroll", checkScrollButtons);
+      window.removeEventListener("resize", checkScrollButtons);
+    };
+  }, [products]);
+
+  const scroll = (direction: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const scrollAmount = 300;
+    el.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  const navigateProductPage = (id: number) => {
+    navigate(`/productpage/${id}`);
+  };
+
+  return (
+    <div className="relative my-5 mx-[5%] max-w-full overflow-hidden">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="mt-2 font-bold text-foreground/80 text-[25px]">{title}</h1>
+        <p className="text-update text-lg mt-2 cursor-pointer hover:underline">
+          More
+        </p>
+      </div>
+
+      {/* Left Button */}
+      {showLeft && (
+        <ImageButton
+          onClick={() => scroll("left")}
+          className="absolute left-2 top-[55%] -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:bg-gray-200"
+          icon={"left"}
+        />
+      )}
+
+      {/* Right Button */}
+      {showRight && (
+        <ImageButton
+          onClick={() => scroll("right")}
+          className="absolute right-2 top-[55%] -translate-y-1/2 z-10 bg-white rounded-full shadow p-2 hover:bg-gray-200"
+          icon={"right"}
+        />
+      )}
+
+      {/* Product List */}
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto scrollbar-hide mt-4"
+      >
+        <div className="flex gap-4 min-w-max py-2">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="min-w-[250px] h-max rounded-md p-2 cursor-pointer flex-shrink-0 transition-transform hover:-translate-y-2 duration-300"
+              onClick={() => navigateProductPage(product.id)}
+            >
+              <img
+                src={product.image}
+                alt={product.title}
+                className="w-[200px] h-[200px] mx-auto object-contain rounded-md"
+              />
+              <p className="text-center text-sm mt-2 truncate">
+                {product.title}
+              </p>
+              <p className="text-center font-bold mt-1 text-base">
+                ₹{product.price}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;

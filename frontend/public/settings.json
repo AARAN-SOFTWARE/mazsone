@@ -1,0 +1,39 @@
+{
+  "theme": "light",
+  "recordsPerPage": 60,
+ 
+  "client": {
+    "details": {
+      "title": "Client Details",
+      "fields": [
+        { "key": "id", "label": "ID", "inTable": true, "isForm": true },
+        {
+          "key": "name",
+          "label": "Product Name",
+          "type": "textinput",
+          "api":"",
+          "inTable": true,
+          "isForm": true
+        },
+        {
+          "key": "price",
+          "label": "Price",
+          "type": "textinput",
+          "inTable": true,
+          "isForm": true
+        },
+        {
+          "key": "images",
+          "label": "Image",
+          "type": "file",
+          "multiple":true,
+          "inTable": true,
+          "isForm": true
+        },
+  
+        { "key": "action", "label": "Action", "inTable": true, "isForm": true }
+      ]
+    }
+  }
+  
+}
